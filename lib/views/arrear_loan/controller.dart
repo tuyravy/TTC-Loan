@@ -56,35 +56,26 @@ class ArrearLoanController extends GetxController {
     bool isLoadMore = false,
     bool isFilter = false,
   }) async {
+    final staffId = await _resolveStaffId();
     try {
-      if (isRefresh && !isFilter) {
-        clearFilter();
-      }
+      if (isRefresh && !isFilter) clearFilter();
 
       if ((!isRefresh && !isLoadMore) || isFilter) {
         isLoadings.value = true;
       }
 
-      if (startCtl.selectedIndex.value != 3 && isLoadMore) {
-        return;
-      }
+      if (startCtl.selectedIndex.value != 3 && isLoadMore) return;
 
       final response = await Get.find<ApiService>().get(
         EndPoints.arrearLoan,
-        queryParameters: {
-          'staff_id': await _resolveStaffId(),
-          'date': dateCtl.text,
-        },
+        queryParameters: {'staff_id': staffId, 'date': dateCtl.text},
       );
 
       final List<dynamic> data = response.data['data'] ?? [];
       arrearModel.value = data.map((e) => ArrearModel.fromJson(e)).toList();
       isDone = true;
     } catch (e) {
-      if (isClosed) {
-        return;
-      }
-      ExceptionHandler.handleException(e);
+      if (!isClosed) ExceptionHandler.handleException(e);
     } finally {
       isLoadings.value = false;
     }
@@ -103,9 +94,40 @@ class ArrearLoanController extends GetxController {
   void clearFilter() {}
 
   Future<void> fetchUser() async {
+    final branchId = await getbranchId();
     try {
       isLoading.value = true;
-      StaffList = await DatabaseHelper.instance.queryAllRowsStaff();
+      if (UserRepository.shared.isCO) {
+        final p = UserRepository.shared.profile;
+        StaffList = [
+          StaffModel(
+            id: p.id.toInt(),
+            name: p.name,
+            email: p.email,
+            profile: p.profile,
+            phone: p.phone,
+            gender: p.gender,
+            status: p.status,
+            branch_id: p.branch_id.toString(),
+            created_at: p.created_at,
+            updated_at: p.updated_at,
+            profilePath: p.profilePath,
+            policy: p.policy,
+            type: p.type,
+            full_name: p.full_name,
+          ),
+        ];
+      } else {
+        final res = await Get.find<ApiService>().get(
+          EndPoints.getStaff,
+          queryParameters: {'branch_id': branchId},
+          isShowLoading: false,
+        );
+        final data =
+            (getPropertyFromJson(res.data, 'data') as List)
+                .cast<Map<String, dynamic>>();
+        StaffList = data.map((e) => StaffModel.fromJson(e)).toList();
+      }
     } catch (e) {
       if (!isClosed) ExceptionHandler.handleException(e);
     } finally {
