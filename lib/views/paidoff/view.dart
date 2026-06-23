@@ -188,7 +188,7 @@ class _SummarySection extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: GestureDetector(
-          onTap: () => Get.toNamed(Routes.customers),
+          // onTap: () => Get.toNamed(Routes.customers),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),

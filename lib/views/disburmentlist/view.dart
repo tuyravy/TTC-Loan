@@ -70,7 +70,7 @@ class _SummarySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Get.find<DisburmentListController>();
-   
+
     return Obx(() {
       if (c.isLoading.value) {
         return const Padding(
@@ -81,7 +81,10 @@ class _SummarySection extends StatelessWidget {
 
       final totalClients = int.tryParse(c.totalClient.text) ?? 0;
       final totalAmount =
-          double.tryParse(c.totalAmount.text.replaceAll(',', '').replaceAll('រៀល', '')) ?? 40;
+          double.tryParse(
+            c.totalAmount.text.replaceAll(',', '').replaceAll('រៀល', ''),
+          ) ??
+          40;
       final pendingApprovalCount =
           c.disburment
               .where((m) => m.loan_status.toLowerCase().contains('waiting'))
@@ -90,7 +93,7 @@ class _SummarySection extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: GestureDetector(
-          onTap: () => Get.toNamed(Routes.customers),
+          // onTap: () => Get.toNamed(Routes.customers),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
