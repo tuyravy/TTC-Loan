@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:apploan/core/offline/database_helper.dart';
 import 'package:apploan/core/utils/date_picker.dart';
 import 'package:apploan/views/start/controller.dart';
+import 'package:apploan/views/paymentlist/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -118,18 +119,19 @@ class PrePaidController extends GetxController
         'user_id': user_id,
         'currency_id': 2,
         'description': descriptionCtl.text,
-        'geteway_id': 2,
+        'gateway_id': 2,
       });
 
       int? maxId = await DatabaseHelper.instance.getCollectedMaxId();
-      ClientList =
-          ClientList.where(
-            (client) => client.id == clientSelected?.id,
-          ).toList();
+      final selectedName =
+          ClientList
+              .firstWhereOrNull((client) => client.id == clientSelected?.id)
+              ?.name ??
+          'N/A';
 
       await DatabaseHelper.instance.insertCollected({
         'id': maxId,
-        'client': ClientList[0].name + "(បង់ទុក)",
+        'client': selectedName + "(បង់ទុក)",
         'loan_officer': user_id,
         'created_by_id': user_id,
         'branch': "",
@@ -147,7 +149,7 @@ class PrePaidController extends GetxController
         "status_pay": "មិនទាន់អនុម័ត",
         'submitted_on': DateFormat('yyyy-MM-dd').format(DateTime.now()),
         'syncedate': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-        'synced': 1,
+        'synced': '0',
       });
 
       await Get.find<ApiService>().post(
@@ -155,6 +157,13 @@ class PrePaidController extends GetxController
         formData,
         isShowLoading: true,
       );
+
+      final paymentListCtl = Get.find<PaymentListController>();
+      if (UserRepository.shared.isCO) {
+        await paymentListCtl.fetchpaymentList();
+      } else {
+        await paymentListCtl.fetchpaymentListFromApi();
+      }
 
       DialogManager.showDialog(
         title: LocaleKeys.successfully.tr,

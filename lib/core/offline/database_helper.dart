@@ -280,12 +280,31 @@ class DatabaseHelper {
     return results;
   }
 
-  Future<int> countCustomersCollection() async {
+  Future<int> countCustomersCollection({String? userId}) async {
     Database db = await instance.database;
+    if (userId == null) {
+      return Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM Collected'),
+          ) ??
+          0;
+    }
     return Sqflite.firstIntValue(
-          await db.rawQuery('SELECT COUNT(*) FROM Collected'),
+          await db.rawQuery(
+            'SELECT COUNT(*) FROM Collected WHERE created_by_id = ?',
+            [userId],
+          ),
         ) ??
         0;
+  }
+
+  Future<List<PaymentModel>> queryAllRowsCollectedByUser(String? userId) async {
+    Database db = await instance.database;
+    if (userId == null) return queryAllRowsCollected();
+    final responseData = await db.rawQuery(
+      'select * from Collected where created_by_id = ?',
+      [userId],
+    );
+    return responseData.map((e) => PaymentModel.fromDb(e)).toList();
   }
 
   Future<int> countCustomersRepaymentNotYetSync() async {
@@ -330,6 +349,18 @@ class DatabaseHelper {
     Database db = await instance.database;
     final responseData = await db.rawQuery(
       "select * from Collected where synced='0'",
+    );
+    return responseData.map((e) => PaymentModel.fromDb(e)).toList();
+  }
+
+  Future<List<PaymentModel>> queryAllRowsCollectedNotYetSyncByUser(
+    String? userId,
+  ) async {
+    Database db = await instance.database;
+    if (userId == null) return queryAllRowsCollectedNotYetSync();
+    final responseData = await db.rawQuery(
+      "select * from Collected where synced='0' and created_by_id = ?",
+      [userId],
     );
     return responseData.map((e) => PaymentModel.fromDb(e)).toList();
   }

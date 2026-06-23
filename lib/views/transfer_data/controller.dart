@@ -134,8 +134,9 @@ class TransferDataController extends GetxController {
 
   Future<void> _loadSummary() async {
     isLoadings.value = true;
-    final rows =
-        await DatabaseHelper.instance.queryAllRowsCollectedNotYetSync();
+    final userId = (await getUserId())?.toString();
+    final rows = await DatabaseHelper.instance
+        .queryAllRowsCollectedNotYetSyncByUser(userId);
     clientCount.value = rows.length;
     totalRepaymentKhr.value = rows.fold<double>(
       0.0,
@@ -159,9 +160,8 @@ class TransferDataController extends GetxController {
     try {
       isLoading.value = true; // Start loading
       progress.value = 0.0; // Reset progress
-      repayment.value = await DatabaseHelper.instance.queryAllRowsCollected();
-      repayment.value =
-          repayment.value.where((item) => item.synced == "0").toList();
+      repayment.value = await DatabaseHelper.instance
+          .queryAllRowsCollectedNotYetSyncByUser(user_id?.toString());
 
       var i = repayment.value.length;
       for (var item in repayment.value) {
@@ -244,9 +244,8 @@ class TransferDataController extends GetxController {
       progress.value = 0.0;
 
       // Get unsynced repayments
-      repayment.value = await DatabaseHelper.instance.queryAllRowsCollected();
-      repayment.value =
-          repayment.value.where((item) => item.synced == "0").toList();
+      repayment.value = await DatabaseHelper.instance
+          .queryAllRowsCollectedNotYetSyncByUser(userId?.toString());
 
       if (repayment.isEmpty) {
         DialogManager.showDialog(

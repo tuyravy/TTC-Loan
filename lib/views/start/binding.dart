@@ -18,6 +18,7 @@ class StartBinding extends Bindings {
     );
     Get.lazyPut<PaidOffController>(() => PaidOffController(), fenix: true);
     Get.lazyPut<ReasonController>(() => ReasonController(), fenix: true);
+    Get.lazyPut<RepaymentController>(() => RepaymentController(), fenix: true);
     Get.put<ApproveLoansController>(ApproveLoansController(), permanent: true);
   }
 }

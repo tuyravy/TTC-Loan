@@ -181,23 +181,17 @@ class PaidOffController extends GetxController {
       // final data = getPropertyFromJson(DatabaseHelper.instance.queryAllRowsRepayments(1),"data");
       // print(data);
       final data = getPropertyFromJson(res.data, 'data');
-      totalClient.text = getPropertyFromJson(res.data, 'totalClient');
       totalAmount.text = getPropertyFromJson(res.data, 'totalAmount');
 
-      // total = getPropertyFromJson(res.data['totalAmount'], 'total') ?? 0;
-      // pagination.checkLoadMore((data['data'] as List).length);
+      // This endpoint always returns the full dataset (no page/offset param
+      // is sent), so there's never a next page to load.
+      pagination.isEndOfPage = true;
 
-      if (isRefresh) {
-        repaymentModels.value = List<PaidOffModel>.from(
-          (data as List).map((e) => PaidOffModel.fromJson(e)).toList(),
-        );
-      } else {
-        repaymentModels.addAll(
-          List<PaidOffModel>.from(
-            (data as List).map((e) => PaidOffModel.fromJson(e)).toList(),
-          ),
-        );
-      }
+      repaymentModels.value = List<PaidOffModel>.from(
+        (data as List).map((e) => PaidOffModel.fromJson(e)).toList(),
+      );
+      totalClient.text =
+          repaymentModels.map((e) => e.client_id).toSet().length.toString();
     } catch (e) {
       if (isClosed) {
         return;

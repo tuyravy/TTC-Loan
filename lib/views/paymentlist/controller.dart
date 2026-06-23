@@ -86,14 +86,18 @@ class PaymentListController extends GetxController {
 
   int customerCount = 0;
   Future<void> _countCustomers() async {
-    customerCount = await DatabaseHelper.instance.countCustomersCollection();
+    final userId = (await getUserId())?.toString();
+    customerCount = await DatabaseHelper.instance.countCustomersCollection(
+      userId: userId,
+    );
     totalClient.text = customerCount.toString();
   }
 
   double sum = 0;
   Future<void> _calculateSum() async {
-    List<PaymentModel> rows =
-        await DatabaseHelper.instance.queryAllRowsCollected();
+    final userId = (await getUserId())?.toString();
+    List<PaymentModel> rows = await DatabaseHelper.instance
+        .queryAllRowsCollectedByUser(userId);
     sum = rows.fold(
       0.0,
       (prev, element) => prev + double.parse(element.total_repayment),
@@ -120,7 +124,9 @@ class PaymentListController extends GetxController {
       await _calculateSum();
       collectedSumRaw.value = sum;
       totalRepaymentRaw.value = sum;
-      repayment.value = await DatabaseHelper.instance.queryAllRowsCollected();
+      final userId = (await getUserId())?.toString();
+      repayment.value = await DatabaseHelper.instance
+          .queryAllRowsCollectedByUser(userId);
       collectedClients.value = repayment.value.length;
       isDone = true;
       DialogManager.hideLoading();

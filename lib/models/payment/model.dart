@@ -3,6 +3,7 @@ class PaymentModel {
   final String client;
   final String photo;
   final String loan_officer;
+  final String? loan_officer_id;
   final String client_id;
   final String loan_id;
   final String client_code;
@@ -20,6 +21,7 @@ class PaymentModel {
     required this.client,
     required this.photo,
     required this.loan_officer,
+    this.loan_officer_id,
     required this.client_id,
     required this.loan_id,
     required this.client_code,
@@ -62,6 +64,7 @@ class PaymentModel {
       client: json['client']?.toString() ?? 'N/A',
       photo: json['photo']?.toString() ?? 'N/A',
       loan_officer: json['loan_officer']?.toString() ?? 'N/A',
+      loan_officer_id: json['loan_officer_id']?.toString(),
       client_id: json['client_id']?.toString() ?? 'N/A',
       loan_id: json['loan_id']?.toString() ?? 'N/A',
       client_code: json['client_code']?.toString() ?? 'N/A',
@@ -83,6 +86,7 @@ class PaymentModel {
       client: json['client'] ?? 'N/A',
       photo: json['photo'] ?? 'N/A',
       loan_officer: json['loan_officer']?.toString() ?? 'N/A',
+      loan_officer_id: json['created_by_id']?.toString(),
       client_id: json['client_id']?.toString() ?? 'N/A',
       loan_id: json['loan_id']?.toString() ?? 'N/A',
       client_code: json['client_code'] ?? 'N/A',

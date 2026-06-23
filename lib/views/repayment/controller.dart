@@ -221,11 +221,17 @@ class RepaymentController extends GetxController {
         isShowLoading: false,
       );
 
+      final collectedLoanIds =
+          (await DatabaseHelper.instance.queryAllRowsCollected())
+              .map((e) => e.loan_id)
+              .toSet();
+
       final data = getPropertyFromJson(res.data, 'data');
       final fetched = List<RepaymentModel>.from(
         (data as List)
             .map((e) => RepaymentModel.fromJson(e))
-            .where((e) => double.parse(e.total_repayment) > 0),
+            .where((e) => (double.tryParse(e.total_toclose) ?? 0) > 0)
+            .where((e) => !collectedLoanIds.contains(e.loan_id)),
       );
       _allItems = fetched;
       coNames.value =

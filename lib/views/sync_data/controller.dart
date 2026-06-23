@@ -407,7 +407,7 @@ class SyncDataController extends GetxController {
           'id': item.id,
           'client': item.client,
           'loan_officer': item.loan_officer,
-          'created_by_id': userId,
+          'created_by_id': item.loan_officer_id ?? userId,
           'branch': "",
           'client_id': item.client_id,
           'loan_id': item.loan_id,

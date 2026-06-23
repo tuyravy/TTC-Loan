@@ -33,17 +33,19 @@ class PaymentCollectionView extends GetView<PaymentListController> {
         children: [
           UIConstants.midSpacing.height,
           Obx(() {
+            final repayCtl = Get.find<RepaymentController>();
             final collected = controller.collectedSumRaw.value;
-            final totalRepayment = controller.totalRepaymentRaw.value;
-            final uncollected = totalRepayment - collected;
-            final totalClients =
-                int.tryParse(controller.totalClient.text) ?? 0;
-            final uncollectedClients =
-                totalClients - controller.collectedClients.value;
+            final uncollectedItems = repayCtl.repaymentModel;
+            final uncollected = uncollectedItems.fold<double>(
+              0.0,
+              (sum, e) => sum + (double.tryParse(e.total_repayment) ?? 0),
+            );
+            final uncollectedClients = uncollectedItems.length;
+            final totalPlan = collected + uncollected;
             final collectedPercent =
-                totalRepayment == 0
+                totalPlan == 0
                     ? 0
-                    : ((collected / totalRepayment) * 100).clamp(0, 100);
+                    : ((collected / totalPlan) * 100).clamp(0, 100);
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),

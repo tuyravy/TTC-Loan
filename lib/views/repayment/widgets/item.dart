@@ -14,10 +14,13 @@ class RepaymentItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
+      onTap: () async {
         if (UserRepository.shared.isCO) {
-          BottomSheetManager.custom(
-            content: DeliverySheet(delivery: repayment),
+          await BottomSheetManager.custom(
+            content: RepaymentSheet(repayment: repayment),
+          );
+          await Get.find<RepaymentController>().fetchRepayment(
+            isRefresh: true,
           );
         } else {
           showModalBottomSheet(
@@ -71,7 +74,9 @@ class RepaymentItemWidget extends StatelessWidget {
                 ),
                 8.width,
                 Text(
-                  formatCurrency(repayment.total_repayment.toString()),
+                  (double.tryParse(repayment.total_repayment) ?? 0) <= 0
+                      ? 'បង់ទុកមុន'
+                      : formatCurrency(repayment.total_repayment),
                   style: AppTextStyle.normalSecondaryBold.copyWith(
                     color: AppColor.red,
                   ),

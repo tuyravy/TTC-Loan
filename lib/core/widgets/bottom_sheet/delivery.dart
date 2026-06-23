@@ -7,10 +7,10 @@ import 'package:apploan/models/models.dart';
 import 'package:apploan/views/views.dart';
 import 'package:apploan/views/repayment/repayment.dart';
 
-class DeliverySheet extends StatelessWidget {
-  DeliverySheet({Key? key, required this.delivery}) : super(key: key);
+class RepaymentSheet extends StatelessWidget {
+  RepaymentSheet({Key? key, required this.repayment}) : super(key: key);
 
-  final RepaymentModel delivery;
+  final RepaymentModel repayment;
   final RepaymentController startCtl = Get.find<RepaymentController>();
 
   final TextEditingController totalRepaymentCtl = TextEditingController();
@@ -30,14 +30,14 @@ class DeliverySheet extends StatelessWidget {
       final int? userId = await getUserId();
 
       await DatabaseHelper.instance.insertCollected({
-        'client': delivery.client,
+        'client': repayment.client,
         'loan_officer': userId,
         'created_by_id': userId,
-        'branch': delivery.branch,
-        'client_id': delivery.client_id,
-        'loan_id': delivery.loan_id,
-        'client_code': delivery.client_code,
-        'photo': delivery.photo,
+        'branch': repayment.branch,
+        'client_id': repayment.client_id,
+        'loan_id': repayment.loan_id,
+        'client_code': repayment.client_code,
+        'photo': repayment.photo,
         'total_repayment': double.parse(rawText),
         'amount_penalty':
             totalPenaltyCtl.text.isEmpty ? '0' : totalPenaltyCtl.text,
@@ -51,7 +51,7 @@ class DeliverySheet extends StatelessWidget {
       });
 
       final index = startCtl.repaymentModel.indexWhere(
-        (e) => e.loan_id == delivery.loan_id,
+        (e) => e.loan_id == repayment.loan_id,
       );
       if (index != -1) {
         final u = startCtl.repaymentModel[index];
@@ -123,7 +123,7 @@ class DeliverySheet extends StatelessWidget {
 
             _item(
               title: LocaleKeys.totalRepayment.tr,
-              value: formatCurrency(delivery.total_repayment),
+              value: formatCurrency(repayment.total_repayment),
               isTotal: true,
             ),
             UIConstants.midSpacing.height,
@@ -131,22 +131,22 @@ class DeliverySheet extends StatelessWidget {
             UIConstants.midSpacing.height,
             _item(
               title: LocaleKeys.principals.tr,
-              value: formatCurrency(delivery.principal),
+              value: formatCurrency(repayment.principal),
             ),
             UIConstants.midSpacing.height,
             _item(
               title: LocaleKeys.interast.tr,
-              value: formatCurrency(delivery.interest),
+              value: formatCurrency(repayment.interest),
             ),
             UIConstants.midSpacing.height,
             _item(
               title: LocaleKeys.fee.tr,
-              value: formatCurrency(delivery.monthly_fee),
+              value: formatCurrency(repayment.monthly_fee),
             ),
             UIConstants.midSpacing.height,
             _item(
               title: LocaleKeys.penalty.tr,
-              value: formatCurrency(delivery.penalty),
+              value: formatCurrency(repayment.penalty),
             ),
             UIConstants.spacing.height,
 

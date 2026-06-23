@@ -54,7 +54,7 @@ class PaidOffSheet extends StatelessWidget {
           'status_pay': 'មិនទាន់អនុម័ត',
           'submitted_on': DateFormat('yyyy-MM-dd').format(DateTime.now()),
           'syncedate': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-          'synced': '1',
+          'synced': '0',
         });
       } catch (e) {
         DialogManager.showDialog(
