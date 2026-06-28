@@ -12,6 +12,7 @@ export 'contact_us/contact_us.dart';
 export 'customers/customers.dart';
 export 'change_password/change_password.dart';
 export 'login/login.dart';
+export 'otp_verification/otp_verification.dart';
 export 'register/register.dart';
 export 'finish_delivery/finish_delivery.dart';
 export 'notification/notification.dart';

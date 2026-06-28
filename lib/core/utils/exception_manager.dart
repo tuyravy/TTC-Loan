@@ -20,10 +20,21 @@ class ExceptionHandler {
       final res = error.response;
       if (res != null) {
         if (res.data is Map) {
-          subTitle = res.data['message'];
+          final message = res.data['message'];
+          subTitle =
+              (message is String && message.isNotEmpty)
+                  ? message
+                  : 'Something went wrong (${res.statusCode ?? 'unknown'})';
+        } else if (res.data is String &&
+            (res.data as String).trim().startsWith('<')) {
+          // Server returned an HTML error page (e.g. 404) instead of JSON.
+          subTitle =
+              'Server error (${res.statusCode ?? 'unknown'}). Please try again later.';
         } else {
-          subTitle = res.data;
+          subTitle = res.data?.toString() ?? 'Something went wrong';
         }
+      } else {
+        subTitle = error.message ?? 'Network error. Please check your connection.';
       }
     } else if (error is String) {
       subTitle = error;

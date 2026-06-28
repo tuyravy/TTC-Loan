@@ -15,6 +15,8 @@ class PaidOffController extends GetxController {
   final TextEditingController endBillCreateDateCtl = TextEditingController();
   final TextEditingController totalClient = TextEditingController();
   final TextEditingController totalAmount = TextEditingController();
+  final RxDouble totalClosedToday = 0.0.obs;
+  final RxInt totalClosedClient = 0.obs;
   final TextEditingController searchCtl = TextEditingController();
   final RxBool isSearchVisible = false.obs;
   final RxList<PaidOffModel> repaymentModels = <PaidOffModel>[].obs;
@@ -153,6 +155,17 @@ class PaidOffController extends GetxController {
       // print(data);
       final data = getPropertyFromJson(res.data, 'data');
       totalAmount.text = getPropertyFromJson(res.data, 'totalAmount');
+      totalClosedToday.value =
+          double.tryParse(
+            getPropertyFromJson(res.data, 'totalClosed')?.toString() ?? '',
+          ) ??
+          0.0;
+      totalClosedClient.value =
+          int.tryParse(
+            getPropertyFromJson(res.data, 'totalClosedClient')?.toString() ??
+                '',
+          ) ??
+          0;
 
       // This endpoint always returns the full dataset (no page/offset param
       // is sent), so there's never a next page to load.

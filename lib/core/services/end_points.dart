@@ -22,7 +22,7 @@ class EndPoints {
   static String get arrearLoan => 'report/loan/arrears';
 
   static String get repayment => 'report/loan/un_repayment';
-  static String get repaymentDetail => 'report/loan/repaymentdetail';
+  static String get repaymentDetail => 'report/loan/repayment_detail';
   static String get collection => 'report/loan/repayment';
   static String get dailyDataCollection => 'report/loan/collection_data_daily';
 
@@ -68,9 +68,26 @@ class EndPoints {
   static String get repaymentPending => 'repayment_loan/approval-payment';
   static String get repaymentReceive => 'loan';
 
-  // TODO: placeholder path — backend hasn't built this endpoint yet.
-  // Swap in the real path once available (CEO -> BM cash transfer).
-  static String get cashTransferToBM => 'cash_transfer/store';
+  static String get cashTransferToBM => 'report/loan/cashTransferBM';
+
+  static String get getRoleBm => 'report/loan/get_role_bm';
+
+  static String get cashTransferCoSummary => 'report/loan/cash_transfer_co';
+  static String get cashReceiveFrom => 'report/loan/cash_receive_from';
+  static String get cashReceiveBM => 'report/loan/cashReceiveBM';
+  static String get cashReceiveBMList => 'report/loan/cashReceiveBMList';
+  static String get cashReceiveFromStore =>
+      'report/loan/cash_receive_from_store';
+  static String get cashCeoReceiveFromBM =>
+      'report/loan/cashCeoReceiveFromBM';
+
+  // TODO: placeholder path — backend hasn't built this endpoint yet
+  // (every variant tried 404s). Swap in the real path once available.
+  static String get cashTransferCoStore => 'report/loan/cash_transfer_co_store';
+
+  static String get sendOtp => 'login/otp';
+  static String get verifyOtp => 'login/otp/verify';
+  static String get resendOtp => 'login/otp/resend';
 
   static String rejectLoan(String loanId) => 'loan/$loanId/reject_loan';
 }

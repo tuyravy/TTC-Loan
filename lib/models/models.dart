@@ -36,3 +36,4 @@ export 'guarantor/guarantor.dart';
 export 'disbursement/disbursement.dart';
 export 'summary_card/summary_card_config.dart';
 export 'arrear_loan/arrear_loan.dart';
+export 'repayment_detail/repayment_detail.dart';

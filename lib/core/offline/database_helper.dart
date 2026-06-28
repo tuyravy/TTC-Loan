@@ -458,10 +458,14 @@ class DatabaseHelper {
     // Already-synced rows for this loan must stay untouched so the next
     // transfer only ever picks up synced=0 rows; insert this as a new row
     // instead of merging into the synced one.
-    final newRow =
-        existing.isEmpty
-            ? row
-            : (Map<String, dynamic>.from(row)..remove('id'));
+    //
+    // Always let SQLite assign the row's id — callers pass in their own
+    // source loan/report id (which is only unique within that report, not
+    // across Collected as a whole), so keeping it risks a UNIQUE constraint
+    // collision between unrelated loans from different screens. Every
+    // lookup against this table is keyed by loan_id, never by id, so this
+    // is safe.
+    final newRow = Map<String, dynamic>.from(row)..remove('id');
     return await db.insert('Collected', newRow);
   }
 
@@ -538,6 +542,13 @@ class DatabaseHelper {
     await db.delete('Collected', where: 'id = ?', whereArgs: [id]);
     // await db.delete('Collected');
     await db.execute('VACUUM'); // This resets the auto-increment counter.
+  }
+
+  /// Removes the local row for [loanId] right after a successful submit —
+  /// once the server has it, there's no need to keep it around locally.
+  Future<void> deleteCollectedByLoanId(String loanId) async {
+    Database db = await instance.database;
+    await db.delete('Collected', where: 'loan_id = ?', whereArgs: [loanId]);
   }
 
   Future<int> countCustomersCollect() async {

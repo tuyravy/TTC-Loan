@@ -3,7 +3,7 @@ import 'package:timeline_tile/timeline_tile.dart';
 import 'package:apploan/core/core.dart';
 import 'package:apploan/models/models.dart';
 import 'package:apploan/views/paymentlist/widgets/end_child.dart';
-import 'package:apploan/views/paymentlist/widgets/payment_steps_sheet.dart';
+import 'package:apploan/views/paymentlist/widgets/payment_detail_sheet.dart';
 
 import '../controller.dart';
 
@@ -38,12 +38,13 @@ class CustomTimeLinesWidget extends StatelessWidget {
         ),
       ),
       endChild: GestureDetector(
-        onTap:
-            () => BottomSheetManager.custom(
-              content: PaymentStepsSheet(
-                steps: controller.stepsForLoan(tracking.loan_id),
-              ),
-            ),
+        onTap: () async {
+          final detail = await controller.fetchRepaymentDetail(
+            tracking.loan_id,
+          );
+          if (detail == null) return;
+          BottomSheetManager.custom(content: PaymentDetailSheet(detail: detail));
+        },
         child: EndChildsWidget(tracking: tracking, controller: controller),
       ),
     );

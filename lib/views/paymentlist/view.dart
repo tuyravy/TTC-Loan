@@ -188,9 +188,9 @@ class _SearchSection extends StatelessWidget {
         hintText: LocaleKeys.searchByCIDName.tr,
         onClear: () {
           c.clearFilter();
-          c.fetchpaymentList();
+          c.fetchpaymentListFromApi();
         },
-        onSubmitted: (_) => c.fetchpaymentList(),
+        onSubmitted: (_) => c.fetchpaymentListFromApi(),
       ),
     );
   }

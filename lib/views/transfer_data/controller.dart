@@ -66,7 +66,7 @@ class TransferDataController extends GetxController {
     final branchId = await getbranchId();
     try {
       final res = await Get.find<ApiService>().get(
-        EndPoints.getStaff,
+        EndPoints.getRoleBm,
         queryParameters: {'branch_id': branchId},
       );
       final data = getPropertyFromJson(res.data, 'data');
@@ -100,8 +100,9 @@ class TransferDataController extends GetxController {
 
       await Get.find<ApiService>().post(EndPoints.cashTransferToBM, {
         'branch_id': branchId,
-        'created_by_id': userId,
+        'ceo_id': userId,
         'bm_id': selectedBM.value!.id,
+        'currency_id': 2,
         'amount': amount,
         'description': cashNoteCtl.text,
       }, isShowLoading: true);
@@ -206,16 +207,32 @@ class TransferDataController extends GetxController {
   // }
 
   Future<void> _loadSummary() async {
-    isLoadings.value = true;
-    final userId = (await getUserId())?.toString();
-    final rows = await DatabaseHelper.instance
-        .queryAllRowsCollectedNotYetSyncByUser(userId);
-    clientCount.value = rows.length;
-    totalRepaymentKhr.value = rows.fold<double>(
-      0.0,
-      (prev, e) => prev + (double.tryParse(e.total_repayment) ?? 0),
-    );
-    isLoadings.value = false;
+    try {
+      isLoadings.value = true;
+      final branchId = await getbranchId();
+      final userId = await getUserId();
+      final permission = await SharedPreferencesManager.get('permission');
+
+      final res = await Get.find<ApiService>().get(
+        EndPoints.cashTransferCoSummary,
+        queryParameters: {
+          'branch_id': branchId,
+          'user_id': userId,
+          'permission': permission,
+        },
+        isShowLoading: false,
+      );
+
+      final data = getPropertyFromJson(res.data, 'data');
+      clientCount.value =
+          int.tryParse(data?['total_client']?.toString() ?? '') ?? 0;
+      totalRepaymentKhr.value =
+          double.tryParse(data?['total_repayment']?.toString() ?? '') ?? 0.0;
+    } catch (e) {
+      ExceptionHandler.handleException(e);
+    } finally {
+      isLoadings.value = false;
+    }
   }
 
   String formatCurrency(String amount) {
@@ -229,64 +246,51 @@ class TransferDataController extends GetxController {
   Future<void> sendDataToServer() async {
     WakelockPlus.enable();
     int? branchId = await getbranchId();
-    int? user_id = await getUserId();
+    int? userId = await getUserId();
     try {
       isLoading.value = true; // Start loading
       progress.value = 0.0; // Reset progress
-      repayment.value = await DatabaseHelper.instance
-          .queryAllRowsCollectedNotYetSyncByUser(user_id?.toString());
 
-      var i = repayment.value.length;
-      for (var item in repayment.value) {
-        try {
-          await DatabaseHelper.instance.updateCollected({
-            'id': item.id,
-            'client': item.client,
-            'loan_officer': item.loan_officer,
-            'branch': branchId,
-            'client_id': item.client_id,
-            'loan_id': item.loan_id,
-            'client_code': item.client_code,
-            'photo': item.photo,
-            'submitted_on': item.submitted_on,
-            'total_repayment': item.total_repayment,
-            'amount_penalty': item.amount_penalty,
-            'status_pay': 'បានផ្ទេររួច',
-            'syncedate': item.submitted_on,
-            'synced': 1,
-          });
-        } catch (e) {
-          print("Sync failed: $e");
-          DialogManager.showDialog(
-            title: LocaleKeys.error.tr,
-            subTitle: LocaleKeys.syncFailed.tr,
-          );
+      final permission = await SharedPreferencesManager.get('permission');
+      final res = await Get.find<ApiService>().get(
+        EndPoints.payment,
+        queryParameters: {
+          'branch_id': branchId,
+          'user_id': userId,
+          'permission': permission,
+        },
+        isShowLoading: false,
+      );
+      final data = getPropertyFromJson(res.data, 'data');
+      repayment.value = List<PaymentModel>.from(
+        (data as List).map((e) => PaymentModel.fromJson(e)),
+      );
 
-          return;
-        }
-        // Simulate sending item to server
-        dio.FormData postData = dio.FormData.fromMap({
-          'loan_id': item.loan_id,
-          'amount': item.total_repayment,
-          'amount_penalty': item.amount_penalty,
-          'receipt': '',
-          'date': item.submitted_on,
-          'currency_id': 2,
-          'created_by_id': user_id,
-          'description': "Post Repayment",
-          'gateway_id': 1,
-        });
-
-        await Get.find<ApiService>().post(
-          EndPoints.repaymentStore,
-          postData,
-          isShowLoading: true,
+      if (repayment.isEmpty) {
+        DialogManager.showDialog(
+          title: "No Data",
+          subTitle: "There are no repayments to sync.",
         );
-
-        await Future.delayed(Duration(seconds: 1)); // Simulate delay
-        i++;
-        progress.value = i / 10;
+        return;
       }
+
+      final loanIds =
+          repayment.map((item) => int.tryParse(item.loan_id) ?? item.loan_id).toList();
+
+      await Get.find<ApiService>().post(EndPoints.cashTransferCoStore, {
+        'branch_id': branchId,
+        'user_id': userId,
+        'loan_ids': loanIds,
+      }, isShowLoading: true);
+
+      progress.value = 1;
+
+      // Clear any matching local drafts left over from an earlier offline
+      // submit for the same loan, now that the server has it.
+      for (final item in repayment.value) {
+        await DatabaseHelper.instance.deleteCollectedByLoanId(item.loan_id);
+      }
+
       // Show success dialog
       DialogManager.showDialog(
         title: LocaleKeys.successfully.tr,
@@ -411,6 +415,10 @@ class TransferDataController extends GetxController {
           return;
         }
       }
+
+      // Local rows are only needed locally until they're transferred;
+      // purge already-synced rows now that this batch is confirmed sent.
+      await DatabaseHelper.instance.DeleteCollected();
 
       DialogManager.showDialog(
         title: LocaleKeys.successfully.tr,

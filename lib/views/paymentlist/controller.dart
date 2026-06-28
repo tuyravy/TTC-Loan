@@ -39,11 +39,7 @@ class PaymentListController extends GetxController {
 
   @override
   void onInit() {
-    if (UserRepository.shared.isCO) {
-      fetchpaymentList();
-    } else {
-      fetchpaymentListFromApi();
-    }
+    fetchpaymentListFromApi();
     super.onInit();
   }
 
@@ -91,6 +87,38 @@ class PaymentListController extends GetxController {
   /// into one display row for [loanId], e.g. a loan paid 5000 then 3000.
   List<PaymentModel> stepsForLoan(String loanId) =>
       repayment.where((e) => e.loan_id == loanId).toList();
+
+  Future<RepaymentDetailModel?> fetchRepaymentDetail(String loanId) async {
+    try {
+      final branchId = await getbranchId();
+      final userId = await getUserId();
+      final permission = await _getPermission();
+
+      final res = await Get.find<ApiService>().get(
+        EndPoints.repaymentDetail,
+        queryParameters: {
+          'branch_id': branchId,
+          'user_id': userId,
+          'permission': permission,
+          'loan_id': loanId,
+        },
+        isShowLoading: true,
+      );
+
+      final raw = getPropertyFromJson(res.data, 'data');
+      Map<String, dynamic>? data;
+      if (raw is List && raw.isNotEmpty) {
+        data = raw.first as Map<String, dynamic>;
+      } else if (raw is Map<String, dynamic>) {
+        data = raw;
+      }
+      if (data == null) return null;
+      return RepaymentDetailModel.fromJson(data);
+    } catch (e) {
+      ExceptionHandler.handleException(e);
+      return null;
+    }
+  }
 
   int get displayedCollectedClients =>
       displayedItems.map((e) => e.client_id).toSet().length;
@@ -164,7 +192,7 @@ class PaymentListController extends GetxController {
     isSearchVisible.value = !isSearchVisible.value;
     if (!isSearchVisible.value) {
       clearFilter();
-      fetchpaymentList();
+      fetchpaymentListFromApi();
     }
   }
 

@@ -135,6 +135,10 @@ class DashboardWidget extends StatelessWidget {
 
   void RepaymentHandleTap() {
     Get.back();
+    // RepaymentController is registered permanent (fenix) in StartBinding,
+    // so the route's own lazyPut never re-creates it — refetch explicitly
+    // here or this screen would keep showing stale data.
+    Get.find<RepaymentController>().fetchRepayment(isRefresh: true);
     Get.toNamed(Routes.repayment);
   }
 

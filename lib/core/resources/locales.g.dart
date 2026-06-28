@@ -317,6 +317,15 @@ class LocaleKeys {
   static const totalDebt = 'totalDebt';
   static const loanPurpose = 'loanPurpose';
   static const disbursedDate = 'disbursedDate';
+
+  static const otpVerification = 'otpVerification';
+  static const otpSentToTelegram = 'otpSentToTelegram';
+  static const enterOtpCode = 'enterOtpCode';
+  static const verifyCode = 'verifyCode';
+  static const resendOtp = 'resendOtp';
+  static const resendOtpIn = 'resendOtpIn';
+  static const invalidOtp = 'invalidOtp';
+  static const otpSent = 'otpSent';
 }
 
 class Locales {
@@ -625,6 +634,14 @@ class Locales {
     'disbursedDate': 'Disbursement Date',
     'productType': 'Product Type',
     'firstrepaymentdate': 'First Repayment Date',
+    'otpVerification': 'OTP Verification',
+    'otpSentToTelegram': 'A verification code has been sent to your Telegram.',
+    'enterOtpCode': 'Enter the code',
+    'verifyCode': 'Verify',
+    'resendOtp': 'Resend code',
+    'resendOtpIn': 'Resend code in',
+    'invalidOtp': 'Invalid or expired code. Please try again.',
+    'otpSent': 'A new code has been sent to your Telegram.',
   };
   static const KM_KH = {
     'unableToConnectToTheInternet': 'មិនអាចភ្ជាប់អ៊ីនធឺណិតបានទេ',
@@ -922,5 +939,13 @@ class Locales {
     'disbursedDate': 'កាលបរិច្ឆេទបើកប្រាក់កម្ចី',
     'productType': 'ផលិតផល',
     'firstrepaymentdate': 'ថ្ងៃបង់ប្រាក់លើកទី១',
+    'otpVerification': 'ផ្ទៀងផ្ទាត់កូដ OTP',
+    'otpSentToTelegram': 'កូដផ្ទៀងផ្ទាត់ត្រូវបានផ្ញើទៅ Telegram របស់អ្នក។',
+    'enterOtpCode': 'បញ្ចូលកូដ',
+    'verifyCode': 'ផ្ទៀងផ្ទាត់',
+    'resendOtp': 'ផ្ញើកូដម្តងទៀត',
+    'resendOtpIn': 'ផ្ញើកូដម្តងទៀតក្នុងរយៈពេល',
+    'invalidOtp': 'កូដមិនត្រឹមត្រូវ ឬផុតកំណត់ សូមព្យាយាមម្តងទៀត។',
+    'otpSent': 'កូដថ្មីត្រូវបានផ្ញើទៅ Telegram របស់អ្នក។',
   };
 }

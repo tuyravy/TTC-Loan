@@ -1,4 +1,5 @@
 import 'package:apploan/core/offline/database_helper.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -55,41 +56,31 @@ class PaidOffSheet extends StatelessWidget {
         'synced': '0',
       });
 
-      final index = startCtl.repaymentModels.indexWhere(
-        (e) => e.loan_id == paidoff.loan_id,
+      final formData = dio.FormData.fromMap({
+        'id': paidoff.id,
+        'client': paidoff.client,
+        'loan_officer': userId,
+        'created_by_id': userId,
+        'branch': paidoff.branch,
+        'client_id': paidoff.client_id,
+        'loan_id': paidoff.loan_id,
+        'client_code': paidoff.client_code,
+        'photo': paidoff.photo,
+        'amount': rawAmount,
+        'amount_penalty': totalPenaltyCtl.text,
+        'currency_id': 2,
+        'description': 'Post Repayment',
+        'gateway_id': 1,
+      });
+      await Get.find<ApiService>().post(
+        EndPoints.repaymentStore,
+        formData,
+        isShowLoading: true,
       );
-      if (index != -1) {
-        final u = startCtl.repaymentModels[index];
-        startCtl.repaymentModels[index] = PaidOffModel(
-          id: u.id,
-          client: u.client,
-          loan_officer: u.loan_officer,
-          branch: u.branch,
-          client_id: u.client_id,
-          loan_id: u.loan_id,
-          mobile: u.mobile,
-          client_code: u.client_code,
-          account_number: u.account_number,
-          cycle: u.cycle,
-          loan_term: u.loan_term,
-          photo: u.photo,
-          principal: u.principal,
-          disburmentAmt: u.disburmentAmt,
-          end_pricipal: u.end_pricipal,
-          interest: u.interest,
-          monthly_fee: u.monthly_fee,
-          penalty: u.penalty,
-          villages_name: u.villages_name,
-          last_payment_date: u.last_payment_date,
-          total_repayment:
-              (double.parse(u.total_repayment) - rawAmount).toString(),
-          arrea: u.arrea,
-          total_toclose: u.total_toclose,
-          syncedate: u.syncedate,
-          synced: u.synced,
-        );
-      }
 
+      await DatabaseHelper.instance.deleteCollectedByLoanId(paidoff.loan_id);
+
+      startCtl.onRefresh();
       DialogManager.showDialog(
         title: LocaleKeys.successfully.tr,
         subTitle: LocaleKeys.youHaveSuccessfullyCreated.tr,

@@ -130,7 +130,10 @@ class TransferDataView extends GetView<TransferDataController> {
                           text: LocaleKeys.transfer.tr,
                           width: 100,
                           onPressed:
-                              controller.isLoading.value ? null : onSearch,
+                              (controller.isLoading.value ||
+                                      controller.clientCount.value == 0)
+                                  ? null
+                                  : onSearch,
                         );
                       }),
                     ],
@@ -162,7 +165,7 @@ class _CashTransferToBmForm extends StatelessWidget {
               child: Obx(
                 () => SearchDropDown<StaffModel>(
                   items: c.bmList,
-                  itemAsString: (item) => item.full_name,
+                  itemAsString: (item) => item.name,
                   onChanged: c.onBmChanged,
                   selectedItem: c.selectedBM.value,
                   label: 'Select BM',

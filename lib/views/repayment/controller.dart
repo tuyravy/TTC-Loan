@@ -40,6 +40,7 @@ class RepaymentController extends GetxController {
   final RxList<CoRepaymentGroup> filteredGroups = <CoRepaymentGroup>[].obs;
   final RxList<String> coNames = <String>[].obs;
   List<RepaymentModel> _allItems = [];
+  int _skip = 0;
 
   @override
   void onInit() {
@@ -195,6 +196,8 @@ class RepaymentController extends GetxController {
           clearFilter();
         }
         pagination.refresh();
+        _skip = 0;
+        _allItems = [];
       }
 
       if (pagination.isEndOfPage) {
@@ -204,38 +207,60 @@ class RepaymentController extends GetxController {
       if ((!isRefresh && !isLoadMore) || isFilter) {
         isLoading.value = true;
       }
-      final Map<String, dynamic> params = {
-        'branch_id': branchId,
-        'user_id': userId,
-        'permission': permission,
-      };
-
-      String endPoint = EndPoints.repayment;
-      if (UserRepository.shared.isCO) {
-        endPoint = EndPoints.repayment;
-      }
-
-      final res = await Get.find<ApiService>().get(
-        endPoint,
-        queryParameters: params,
-        isShowLoading: false,
-      );
 
       final collectedLoanIds =
           (await DatabaseHelper.instance.queryAllRowsCollected())
               .map((e) => e.loan_id)
               .toSet();
 
-      final data = getPropertyFromJson(res.data, 'data');
-      final fetched = List<RepaymentModel>.from(
-        (data as List)
-            .map((e) => RepaymentModel.fromJson(e))
-            .where((e) => (double.tryParse(e.total_toclose) ?? 0) > 0)
-            .where((e) => !collectedLoanIds.contains(e.loan_id)),
-      );
-      _allItems = fetched;
+      String endPoint = EndPoints.repayment;
+      if (UserRepository.shared.isCO) {
+        endPoint = EndPoints.repayment;
+      }
+
+      // The API paginates with a small fixed page size (skip/hasMore), so
+      // a short list (e.g. 7 rows) may not be tall enough to scroll and
+      // trigger the pull-up "load more" gesture. Keep fetching pages here
+      // until the server reports there's nothing left, instead of relying
+      // on the user to manually pull up.
+      var hasMore = true;
+      while (hasMore) {
+        final res = await Get.find<ApiService>().get(
+          endPoint,
+          queryParameters: {
+            'branch_id': branchId,
+            'user_id': userId,
+            'permission': permission,
+            'skip': _skip,
+          },
+          isShowLoading: false,
+        );
+
+        final data = getPropertyFromJson(res.data, 'data');
+        final fetched = List<RepaymentModel>.from(
+          (data as List)
+              .map((e) => RepaymentModel.fromJson(e))
+              .where((e) => (double.tryParse(e.total_toclose) ?? 0) > 0)
+              .where((e) => !collectedLoanIds.contains(e.loan_id)),
+        );
+
+        _allItems = [..._allItems, ...fetched];
+
+        hasMore = getPropertyFromJson(res.data, 'hasMore') == true;
+        _skip =
+            int.tryParse(
+              getPropertyFromJson(res.data, 'nextSkip')?.toString() ?? '',
+            ) ??
+            _skip;
+
+        // Nothing new came back even though the server claims more exists —
+        // stop instead of looping forever.
+        if (fetched.isEmpty) break;
+      }
+      pagination.isEndOfPage = true;
+
       coNames.value =
-          fetched
+          _allItems
               .map(
                 (e) => e.loan_officer,
               ) // confirm field name on RepaymentModel
@@ -247,8 +272,8 @@ class RepaymentController extends GetxController {
 
       repaymentModel.value =
           selectedOfficer.value == null
-              ? fetched
-              : fetched
+              ? _allItems
+              : _allItems
                   .where((e) => e.loan_officer == selectedOfficer.value)
                   .toList();
 

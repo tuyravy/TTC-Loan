@@ -117,7 +117,7 @@ class DashboardController extends GetxController {
         final userId = await SharedPreferencesManager.getIntValue('user_id');
         final permission = await _getPermission();
 
-        await _fetchBMSummary(branchId!, userId ?? 0, permission ?? '');
+        await _fetchBMSummary(branchId ?? 0, userId ?? 0, permission ?? '');
         return;
       }
       final List<RepaymentModel> toCollectRows = await DatabaseHelper.instance

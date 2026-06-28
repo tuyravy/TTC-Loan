@@ -179,12 +179,6 @@ class _SummarySection extends StatelessWidget {
         );
       }
 
-      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final paidOffTodayCount =
-          c.repaymentModels
-              .where((m) => m.last_payment_date.startsWith(today))
-              .length;
-
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: GestureDetector(
@@ -205,14 +199,15 @@ class _SummarySection extends StatelessWidget {
             child: GlassStatsCard(
               left: GlassStatItem(
                 label: 'Paid Off Today',
-                value: paidOffTodayCount.toString(),
-                count: '',
+                value:
+                    '៛${NumberFormat('#,##0').format(c.totalClosedToday.value)}',
+                count: '${c.totalClosedClient.value} clients',
               ),
               right: GlassStatItem(
                 label: 'Total Active',
                 value:
-                    '៛${NumberFormat('#,##0').format(c.totalActiveAmount.value)}',
-                count: '${c.totalActiveClients.value} active clients',
+                    '៛${NumberFormat('#,##0').format(double.tryParse(c.totalAmount.text) ?? 0)}',
+                count: '${c.totalClient.text} active clients',
               ),
             ),
           ),

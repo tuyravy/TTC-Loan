@@ -70,16 +70,19 @@ class PrePaidController extends GetxController
   void onClientChanged(ClientPrepaidModel? selectedClient) {
     clientSelected = selectedClient;
   }
+  Future<String?> _getPermission() async =>
+      await SharedPreferencesManager.get('permission');
 
   Future<void> fetchClient() async {
     int? branchId = await getbranchId();
     int? user_id = await getUserId();
-
+    final String? permission = await _getPermission();
     try {
       isLoading.value = true;
       final Map<String, dynamic> params = {
         'branch_id': branchId,
         'user_id': user_id,
+        'permission': permission,
       };
 
       final endpoint =
@@ -157,6 +160,12 @@ class PrePaidController extends GetxController
         formData,
         isShowLoading: true,
       );
+
+      if (clientSelected?.id != null) {
+        await DatabaseHelper.instance.deleteCollectedByLoanId(
+          clientSelected!.id,
+        );
+      }
 
       final paymentListCtl = Get.find<PaymentListController>();
       if (UserRepository.shared.isCO) {

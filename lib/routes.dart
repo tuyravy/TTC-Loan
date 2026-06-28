@@ -10,6 +10,7 @@ class Routes {
   static const String paymentDetail = '/payment-detail';
   static const String changePassword = '/change-password';
   static const String login = '/login';
+  static const String otpVerification = '/otp-verification';
   static const String loginVaiEmail = '/login-via-email';
   static const String register = '/register';
   static const String finishDelivery = '/finish-delivery';
@@ -72,6 +73,11 @@ class Routes {
       name: login,
       page: () => const LoginView(),
       binding: LoginBinding(),
+    ),
+    GetPage(
+      name: otpVerification,
+      page: () => const OtpVerificationView(),
+      binding: OtpVerificationBinding(),
     ),
     GetPage(
       name: register,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:apploan/core/core.dart';
-import 'package:apploan/flavor/flavor.dart';
 import 'package:apploan/models/models.dart';
 import 'package:apploan/routes.dart';
 import 'package:apploan/views/sync_data/controller.dart';
@@ -42,9 +41,11 @@ class LoginController extends GetxController {
 
   Future<void> login() async {
     try {
+      final deviceName = await DeviceInfoHelper.getDeviceName();
       final Map<String, dynamic> payload = {
         'username': usernameCtl.text.replaceAll(' ', '').trim(),
         'password': passCtl.text,
+        'device_name': deviceName,
       };
 
       final res = await Get.find<ApiService>().post(
@@ -70,50 +71,23 @@ class LoginController extends GetxController {
 
       final LoginModel login = LoginModel.fromJson(data);
 
-      final String permission = login.permission;
-      final String token = login.token;
-
-      if (permission.isNotEmpty &&
-          permission != Rule.co.name &&
-          permission != Rule.bm.name &&
-          permission != Rule.eco.name) {
-        DialogManager.showDialog(
-          title: LocaleKeys.permission.tr,
-          subTitle: LocaleKeys.noPermission.tr,
-        );
-        return;
-      }
-
-      /// Pass token becuase when user login at the first time there is no token value when we init AppConfig in main
-      AppConfig.shared.token = token;
-      //await _getProfile(login.user_id);
-
-      await SharedPreferencesManager.setValue(Credential.token.name, token);
+      // Permission and token are only issued once OTP verification
+      // succeeds — OtpVerificationController.verifyOtp() reads them from
+      // the otp/verify response and sets up the session from there.
       await SharedPreferencesManager.setValue(
         Credential.username.name,
         usernameCtl.text,
       );
-      await SharedPreferencesManager.setValue('name', login.name);
       await SharedPreferencesManager.setValue(
         Credential.password.name,
         passCtl.text,
       );
-      await SharedPreferencesManager.setValue(
-        Credential.branch_id.name,
-        login.branch_id,
-      );
-      await SharedPreferencesManager.setValue(
-        Credential.user_id.name,
-        login.user_id,
-      );
-      await SharedPreferencesManager.setValue(
-        Credential.permission.name,
-        login.permission,
-      );
-      UserRepository.shared.setUserTypeFromPermission(login.permission);
 
       DialogManager.hideLoading();
-      Get.offAllNamed(Routes.start);
+      Get.offAllNamed(
+        Routes.otpVerification,
+        arguments: {'userId': login.user_id},
+      );
 
       // Refresh local cache in the background so offline screens and the
       // disbursement form's cached lookups are up to date after login.

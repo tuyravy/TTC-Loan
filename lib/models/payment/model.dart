@@ -108,10 +108,12 @@ class CoRepaymentGroup {
   final int coId;
   final String coName;
   final double amount;
+  final List<String> loanIds;
 
   CoRepaymentGroup({
     required this.coId,
     required this.coName,
     required this.amount,
+    this.loanIds = const [],
   });
 }
